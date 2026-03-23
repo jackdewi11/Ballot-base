@@ -42,10 +42,10 @@ export default function JudgeDashboard() {
               Welcome back{profile?.full_name ? `, ${profile.full_name}` : ""}. Ready to judge.
             </p>
           </div>
-          <Link to="/judge/ballot/new">
+          <Link to="/judge/congress/new">
             <Button className="bg-accent text-accent-foreground hover:bg-accent/90 gap-2">
               <Plus className="h-4 w-4" />
-              New Ballot
+              New Congress Ballot
             </Button>
           </Link>
         </div>
