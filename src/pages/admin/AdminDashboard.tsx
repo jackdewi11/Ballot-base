@@ -50,6 +50,27 @@ export default function AdminDashboard() {
 
   const submittedBallots = ballots.filter((b: any) => b.status === "submitted");
 
+  const handleDelete = async (userId: string) => {
+    setDeletingId(userId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("delete-user", {
+        body: { user_id: userId },
+      });
+      if (res.error || res.data?.error) {
+        toast({ title: "Failed to delete user", description: res.data?.error || res.error?.message, variant: "destructive" });
+      } else {
+        toast({ title: "User deleted" });
+        queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setDeletingId(null);
+      setConfirmUser(null);
+    }
+  };
+
   return (
     <DashboardLayout role="admin">
       <div className="space-y-6">
