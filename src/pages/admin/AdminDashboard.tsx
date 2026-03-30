@@ -179,13 +179,51 @@ export default function AdminDashboard() {
                       <p className="font-medium text-foreground">{p.full_name || "—"}</p>
                       <p className="text-sm text-muted-foreground">{p.email}</p>
                     </div>
-                    <p className="text-sm text-muted-foreground">{p.school || "—"}</p>
+                    <div className="flex items-center gap-3">
+                      <p className="text-sm text-muted-foreground">{p.school || "—"}</p>
+                      {p.id !== user?.id && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          disabled={deletingId === p.id}
+                          onClick={() => setConfirmUser({ id: p.id, name: p.full_name || p.email })}
+                        >
+                          {deletingId === p.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <MinusCircle className="h-4 w-4" />
+                          )}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Delete confirmation dialog */}
+        <AlertDialog open={!!confirmUser} onOpenChange={() => setConfirmUser(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete user?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently remove <strong>{confirmUser?.name}</strong> and all their data. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => confirmUser && handleDelete(confirmUser.id)}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );
