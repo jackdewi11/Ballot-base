@@ -1,9 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Trophy } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+
 import {
   Select,
   SelectContent,
@@ -20,8 +22,18 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user, role: currentRole } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && currentRole) {
+      if (currentRole === "judge") navigate("/judge", { replace: true });
+      else if (currentRole === "admin") navigate("/admin", { replace: true });
+      else navigate("/dashboard", { replace: true });
+    }
+  }, [user, currentRole, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +48,6 @@ export default function SignupPage() {
       password,
       options: {
         data: { full_name: fullName, role },
-        emailRedirectTo: window.location.origin,
       },
     });
 
@@ -44,28 +55,9 @@ export default function SignupPage() {
 
     if (error) {
       toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
-    } else {
-      setSuccess(true);
     }
+    // Auto-confirm is enabled, so auth state change will trigger redirect above
   };
-
-  if (success) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <div className="w-full max-w-sm space-y-6 text-center">
-          <Trophy className="h-10 w-10 text-gold mx-auto" />
-          <h1 className="font-display text-2xl font-bold text-foreground">Check your email</h1>
-          <p className="text-muted-foreground">
-            We sent a confirmation link to <strong className="text-foreground">{email}</strong>.
-            Click the link to activate your account, then sign in.
-          </p>
-          <Link to="/login">
-            <Button variant="outline" className="mt-4">Back to Sign In</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
