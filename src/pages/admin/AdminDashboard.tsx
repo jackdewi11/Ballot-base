@@ -1,15 +1,31 @@
+import { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, ClipboardCheck, Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, ClipboardCheck, Trophy, MinusCircle, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function AdminDashboard() {
-  const { profile } = useAuth();
-
+  const { profile, user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmUser, setConfirmUser] = useState<{ id: string; name: string } | null>(null);
   const { data: ballots = [] } = useQuery({
     queryKey: ["admin-ballots"],
     queryFn: async () => {
@@ -33,6 +49,27 @@ export default function AdminDashboard() {
   });
 
   const submittedBallots = ballots.filter((b: any) => b.status === "submitted");
+
+  const handleDelete = async (userId: string) => {
+    setDeletingId(userId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("delete-user", {
+        body: { user_id: userId },
+      });
+      if (res.error || res.data?.error) {
+        toast({ title: "Failed to delete user", description: res.data?.error || res.error?.message, variant: "destructive" });
+      } else {
+        toast({ title: "User deleted" });
+        queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setDeletingId(null);
+      setConfirmUser(null);
+    }
+  };
 
   return (
     <DashboardLayout role="admin">
@@ -142,13 +179,51 @@ export default function AdminDashboard() {
                       <p className="font-medium text-foreground">{p.full_name || "—"}</p>
                       <p className="text-sm text-muted-foreground">{p.email}</p>
                     </div>
-                    <p className="text-sm text-muted-foreground">{p.school || "—"}</p>
+                    <div className="flex items-center gap-3">
+                      <p className="text-sm text-muted-foreground">{p.school || "—"}</p>
+                      {p.id !== user?.id && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          disabled={deletingId === p.id}
+                          onClick={() => setConfirmUser({ id: p.id, name: p.full_name || p.email })}
+                        >
+                          {deletingId === p.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <MinusCircle className="h-4 w-4" />
+                          )}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Delete confirmation dialog */}
+        <AlertDialog open={!!confirmUser} onOpenChange={() => setConfirmUser(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete user?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently remove <strong>{confirmUser?.name}</strong> and all their data. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => confirmUser && handleDelete(confirmUser.id)}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );
