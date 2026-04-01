@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Crown, UserPlus } from "lucide-react";
 import type { CongressSessionData, SessionStudent, Legislation } from "./types";
+import StudentNameInput from "./StudentNameInput";
 
 interface Props {
   data: CongressSessionData;
