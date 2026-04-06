@@ -415,8 +415,8 @@ export type Database = {
       search_students: {
         Args: { _limit?: number; _query: string }
         Returns: {
-          email: string | null
-          full_name: string | null
+          email: string
+          full_name: string
           id: string
         }[]
       }
