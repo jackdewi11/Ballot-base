@@ -22,6 +22,8 @@ Click the image below to watch the demo:
 
 [![Watch the video](FinalSS.png)](FinalSR.mp4)
 
+Video URL: https://www.image2url.com/r2/default/videos/1776095822313-bc9b3df1-f521-457f-9f95-4f4b9ea6177f.mp4
+
 ---
 
 ## 🛠️ Technical Stack
