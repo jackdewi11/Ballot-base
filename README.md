@@ -20,7 +20,7 @@ The goal of DebateHub is to make debate tournaments more efficient, accurate, an
 
 Click the image below to watch the demo:
 
-[![Watch the video](docs/video-thumbnail.png)](docs/demo.mp4)
+[![Watch the video](Docs/FinalSS.png)](Docs/FinalSR.mp4)
 
 Alternative video link:  
 https://www.image2url.com/r2/default/videos/1776095822313-bc9b3df1-f521-457f-9f95-4f4b9ea6177f.mp4
